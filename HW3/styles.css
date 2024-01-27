@@ -1,0 +1,257 @@
+html,
+body {
+    padding: 0;
+    margin: 0;
+}
+
+p {
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.header-pos {
+    position: fixed;
+    overflow: hidden;
+    top: 0;
+    padding: 2rem;
+    background-color: white;
+    width: 100%;
+    z-index: 1;
+}
+
+.header-main-menu {
+    padding: 0 32.3rem 0rem 4rem;
+    color: #AF9453;
+}
+
+.header-main-menu,
+.header-items {
+    font-size: 16px;
+    font-family: sans-serif;
+}
+
+.header-item {
+    padding: 1rem;
+    text-decoration: none;
+    color: black;
+}
+
+.home {
+    color: #6F5700;
+}
+
+.header-item:hover {
+    color: #6F5700;
+}
+
+.back1 {
+    background-image: url("images/image3.png");
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: 0px -230px;
+}
+
+.back1,
+.quotes,
+.testimonial-content,
+.testomonial,
+.names {
+    width: 1197px;
+}
+
+.first-img-txt {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 500;
+    letter-spacing: 15px;
+    color: white;
+    padding: 4em 0rem 21rem 0rem;
+    font-size: 60px;
+}
+
+
+.first-img-txt,
+.services,
+.back2-txt,
+.discover1,
+.mid-content,
+.gallery,
+.back4-txt,
+.discover2,
+.book-consul {
+    text-align: center;
+}
+
+.part2 {
+    background-color: white;
+    padding-top: 4rem;
+}
+
+.part2,
+.testimonial-content,
+.part3 {
+    display: flex;
+}
+
+.column {
+    padding: 2rem 2.5rem;
+}
+
+.back2 {
+    background-image: url("images/flower.png");
+    background-repeat: no-repeat;
+    width: 284px;
+    height: 582px;
+    background-position: -24px 0px;
+    margin: 0rem 4.5rem 0rem 3.5rem;
+}
+
+.services,
+.gallery {
+    font-family: sans-serif;
+    letter-spacing: 14px;
+    font-size: 30px;
+    color: white;
+    padding-top: 6rem;
+}
+
+.back2-txt,
+.back4-txt {
+    color: white;
+    line-height: 3rem;
+    padding-top: 6.5rem;
+    padding-bottom: 1rem;
+    font-size: 23px;
+    letter-spacing: 2.5px;
+}
+
+.discover1,
+.discover2,
+.book-consul {
+    color: white;
+    background: #AF9453;
+    border: 1px solid;
+    padding: 1rem;
+    font-family: sans-serif;
+    margin: 2.1rem;
+    padding-top: 1.2rem;
+}
+
+.quotes {
+    padding-top: 10rem;
+}
+
+.testomonial {
+    font-family: "Cormorant Garamond", serif;
+    letter-spacing: 2px;
+    font-size: 40px;
+    font-weight: 500;
+    padding: 4rem 0;
+}
+
+.arrow-left {
+    scale: -1;
+    margin-left: 2.8rem;
+
+}
+
+.arrow-left,
+.arrow-right {
+    align-self: center;
+}
+
+.arrow-right {
+    margin-right: 2.8rem;
+}
+
+.names {
+    width: 1197px;
+    font-size: 20px;
+    color: #AF9453;
+    padding-bottom: 10rem;
+    font-family: sans-serif;
+}
+
+.back3 {
+    background-image: url("images/image2.png");
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    margin: 0rem 3.5rem;
+    width: 1056px;
+    height: 628px;
+    background-position: 57px 0px;
+}
+
+.back4 {
+    left: 722px;
+    position: absolute;
+    object-fit: none;
+    width: 345px;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.back4-txt {
+    letter-spacing: 6.5px;
+}
+
+.discover2 {
+    padding: 1.2rem 0 1rem 0 !important;
+    margin-top: 2.5rem !important;
+    width: 200px !important;
+    margin-left: 18rem !important;
+}
+
+.gallery, 
+.back4-txt,
+.discover2 {
+    position: relative;
+    left: 412px;
+    top: 38px;
+    margin: 0 17rem;
+    width: 236px;
+}
+
+.gallery {
+    padding-left: 8px;
+}
+
+.footer-pos {
+    display: flex;
+    background-color: #AF9453;
+    width: 1080px;
+    margin: 8rem 0 2rem 3.5rem;
+}
+
+.footer-txt {
+    color: white;
+    font-family: sans-serif;
+    letter-spacing: .5px;
+    line-height: 23px;
+    padding: 0 1.5rem;
+    font-size: 15px;
+}
+
+.border-left {
+    border-left: 1px solid white;
+    margin: 4rem 0 4.5rem;
+}
+
+.border-right {
+    border-right: 1px solid white;
+    margin: 4rem 0 4.5rem 5rem;
+}
+
+.margin-top {
+    margin-top: 4rem;
+}
+
+.book-consul {
+    margin: 5.5rem 0 4rem 5rem;
+}
+
+.header-item,
+.discover1,
+.discover2,
+.book-consul {
+    cursor: pointer;
+}
