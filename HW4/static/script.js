@@ -59,7 +59,7 @@ function getQuote(endpoint, ticker) {
             console.log("AT last result change quote-->" + JSON.stringify(quoteDetails));
             var quote = document.getElementsByTagName("td");
             console.log("prod" + JSON.stringify(quote[23].innerHTML));
-            quote[13].innerHTML = quoteDetails.t;
+            quote[13].innerHTML = getDate(quoteDetails.t);
             quote[15].innerHTML = quoteDetails.pc;
             quote[17].innerHTML = quoteDetails.o;
             quote[19].innerHTML = quoteDetails.h;
@@ -132,7 +132,7 @@ function getNews(endpoint, ticker) {
                     console.log("prod newsss 2 clone " + newsDetails[i].image);
                     clone.innerHTML = clone.innerHTML.replace("image", newsDetails[i].image);
                     clone.innerHTML = clone.innerHTML.replace("Heading", newsDetails[i].headline);
-                    clone.innerHTML = clone.innerHTML.replace("Date", getNewsDate(newsDetails[i].datetime));
+                    clone.innerHTML = clone.innerHTML.replace("Date", getDate(newsDetails[i].datetime));
                     clone.innerHTML = clone.innerHTML.replace("link", newsDetails[i].url);
                     console.log("prod newsss 2 clone " + clone.innerHTML);
                     clone.style.display = "block";
@@ -146,7 +146,7 @@ function getNews(endpoint, ticker) {
     request.send(null);
 }
 
-function getNewsDate(newsDate) {
+function getDate(newsDate) {
     const regex = /[ ]\d{1,2}[,]/g;
     const date = new Date(newsDate  * 1000);
     const formattedNewsDate = date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
