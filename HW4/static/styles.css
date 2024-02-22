@@ -12,7 +12,7 @@ input {
     font-size: 18px;
     border-radius: 14px;
     border: none;
-    background: #fff;
+    background: white;
     padding-left: 50px;
     padding-right: 70px;
     width: 638px;
@@ -26,6 +26,7 @@ input::placeholder {
 
 input:focus {
     outline: none;
+    background: white;
 }
 
 .cancel-btn {
