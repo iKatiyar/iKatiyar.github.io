@@ -126,7 +126,7 @@ function getNews(endpoint, ticker) {
             console.log("prod newsss " + news[0].innerHTML);
             var newsNum = 0;
             for (let i = 0; i < newsDetails.length; i++) {
-                if (newsDetails[0].image.length && newsDetails[0].headline.length && JSON.stringify(newsDetails[0].datetime).length && newsDetails[0].url.length) {
+                if (newsDetails[i].image.length && newsDetails[i].headline.length && JSON.stringify(newsDetails[i].datetime).length && newsDetails[i].url.length) {
                     var clone = news[0].cloneNode(true);
                     console.log("prod newsss 2 clone " + clone.innerHTML);
                     console.log("prod newsss 2 clone " + newsDetails[i].image);
