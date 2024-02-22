@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="script.js"></script>
+
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/accessibility.js"></script>
+    <title>Stocks</title>
+</head>
+
+<body class="background">
+    <form onsubmit="return false">
+        <div class="search-bar">
+            <h1>Stock Search</h1>
+            <button type="submit" class="search-btn" value="submit" onclick="initialLoad()">
+                <i class="search"></i>
+            </button>
+            <input id="ticker" type="text" placeholder="Enter Stock Ticker Symbol" required>
+            <span class="align-reset">
+                <button type="reset" class="cancel-btn" onclick="resetTab()">
+                    <i class="cancel"></i>
+                </button>
+            </span>
+        </div>
+    </form>
+
+    <div id="error" style="text-align: -webkit-center; text-align: -moz-center;">
+        <div class="error-msg">
+            Error: No record has been found, please enter a valid symbol
+        </div>
+    </div>
+
+
+    <div id="details">
+        <div class="tab">
+            <button id="companyBtn" class="tabBtn" onclick="openTab('companyBtn', 'company')">Company</button>
+            <button id="stockBtn" class="tabBtn" onclick="openTab('stockBtn', 'stock')">Stock Summary</button>
+            <button id="chartBtn" class="tabBtn" onclick="openTab('chartBtn', 'chart')">Charts</button>
+            <button id="newsBtn" class="tabBtn" onclick="openTab('newsBtn', 'news')">Latest News</button>
+        </div>
+        <div id="company" class="tab-content" style="width: 525px; margin-top:30px">
+            <img id="profileImg" height="80px" width="80px" src="img/RedArrowDown.png">
+            <table>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Company Name</td>
+                    <td class="table-right">Apple Inc</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Stock Ticker Symbol</td>
+                    <td class="table-right">AAPL</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Stock Exchange Code</td>
+                    <td class="table-right">NASDAK NMS - GLOBAL MARKET</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Company Start Date</td>
+                    <td class="table-right">1980-12-12</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Category</td>
+                    <td class="table-right">Technology</td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="stock" class="tab-content" style="width: 375px;">
+            <table>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Stock Ticker Symbol</td>
+                    <td class="table-right">AAPL</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Trading Day</td>
+                    <td class="table-right">19 January, 2024</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Previous Closing Price</td>
+                    <td class="table-right">188.87</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Opening Price</td>
+                    <td class="table-right">188.87</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">High Price</td>
+                    <td class="table-right">188.87</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Low Price</td>
+                    <td class="table-right">188.87</td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Change</td>
+                    <td class="table-right"> <img id="changeImg" class="arrow" height="15px" width="15px"
+                            src="img/GreenArrowUp.png"></td>
+                </tr>
+                <tr class="table-border-bottom">
+                    <td class="table-left">Change Percent</td>
+                    <td class="table-right"> <img id="percentImg" class="arrow" height="15px" width="15px"
+                            src="img/RedArrowDown.png"></td>
+                </tr>
+            </table>
+            <div style="margin-top: 30px;margin-left: 69px;">
+                <button class="strong strong-sell">Strong Sell</button>
+                <button class="rec-col rec-col-1">0</button>
+                <button class="rec-col rec-col-2">1</button>
+                <button class="rec-col rec-col-3">13</button>
+                <button class="rec-col rec-col-4">22</button>
+                <button class="rec-col rec-col-5">12</button>
+                <button class="strong strong-buy">Strong Buy</button>
+            </div>
+            <div class="rec-trends">Recommendation Trends</div>
+        </div>
+
+        <div id="chart" class="tab-content" style="width: 1000px;text-align-last: left !important;"></div>
+        <div id="news" class="tab-content" style="width: 1000px;">
+            <div class="news" style="display: none;">
+                <img class="news-img" height="100px" width="100px" src="image">
+                <div class="news-content news-heading">Heading</div>
+                <div class="news-content news-date">Date</div>
+                <a class="news-content" href="link" target="_blank">See Original Post</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
