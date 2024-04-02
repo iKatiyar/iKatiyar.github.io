@@ -1,0 +1,27 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Stock Search</a>
+    <span class="example-spacer"></span>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation" style="margin: 14px 0;">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <span class="example-spacer"></span>
+      <div class="navbar-nav" style="padding: 10px 0;">
+        <button mat-flat-button class="nav-bar" [routerLink]=" isTickerPresent ? ['/search', ticker] : ['/search', 'home']" color="primary" routerLinkActive="active" (click)="selectedItem = 'search'; checkTicker()" [class.border]="selectedItem === 'search'" [class.active] = "isSearchRoute()" style="cursor: pointer;">Search</button>
+        <button mat-flat-button class="nav-bar" [routerLink]="['watchlist']" color="primary" routerLinkActive="active" (click) = "selectedItem = 'watchlist'; saveTickerValue()" [class.border]="selectedItem === 'watchlist'" style="cursor: pointer;">Watchlist</button>
+        <button mat-flat-button class="nav-bar" [routerLink]="['portfolio']" color="primary" routerLinkActive="active" (click) = "selectedItem = 'portfolio'; saveTickerValue()" [class.border]="selectedItem === 'portfolio'" style="cursor: pointer;">Portfolio</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<div class="footer-fix">
+  <router-outlet />
+  <footer class="footer">
+    <div class="text-center">
+      Powered by <a href="https://finnhub.io/" target="_blank">Finhub.io</a>
+    </div>
+  </footer>
+</div>

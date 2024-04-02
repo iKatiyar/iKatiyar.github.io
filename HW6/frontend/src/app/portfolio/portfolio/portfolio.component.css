@@ -1,0 +1,28 @@
+.font-w {
+    font-weight: 500 !important;
+}
+
+#buy-button, #sell-button {
+    outline: none;
+    box-shadow: none;
+}
+.text-danger {
+    color: red !important;
+}
+
+.cancel-no-style {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.cancel-text {
+    color: blue !important;
+    display: block;
+    height: fit-content;
+    border-bottom: 1px solid blue !important;
+    background: transparent !important;
+    font-size: 20px;
+}

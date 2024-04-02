@@ -1,0 +1,65 @@
+.example-spacer {
+    flex: 1 1 auto;
+}
+
+mat-toolbar {
+    background: darkblue;
+}
+
+.active {
+    border-color: white;
+    border: 1px solid white;
+    border-radius: 13px;
+}
+
+.nav-bar {
+    background-color: darkblue !important;
+    font-weight: 400;
+    color: darkgray !important;
+    display: block;
+    text-align: left;
+}
+
+
+nav {
+    background: darkblue !important;
+    padding: 0px 16px;
+}
+
+.active {
+    border-color: white;
+    border: 2px solid white;
+    border-radius: 10px;
+}
+
+.nav-item {
+    text-align: right;
+} 
+
+.border {
+    border-color: white;
+    border: 2px solid white;
+    border-radius: 10px;
+}
+
+.navbar-toggler:focus {
+    text-decoration: none;
+    outline: 0;
+    box-shadow: none;
+}
+
+.footer {
+    width: 100%;
+    line-height: 50px;
+    background-color: rgb(221, 221, 221);
+    font-weight: 500;
+    margin-top: auto;
+}
+
+
+.footer-fix {
+    min-height: 94.2vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}

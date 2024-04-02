@@ -1,0 +1,138 @@
+h1 {
+    font-size: 40px;
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1.2;
+}
+
+.header-text {
+    margin-top: 50px;
+    margin-bottom: 30px;
+}
+
+.outer {
+    border: 2px solid darkblue !important;
+    height: 100%;
+    width: 450px;
+}
+
+input[type="text"] {
+    outline: none;
+    box-shadow: none;
+    font-size: 13px;
+    margin-left: 18px !important;
+    height: 34px;
+}
+
+div button {
+    outline: none;
+    box-shadow: none;
+}
+
+path.input,
+path.facebook {
+    fill: darkblue;
+}
+
+.ticker-font {
+    font-size: 40px;
+}
+
+
+#buy-button,
+#sell-button {
+    outline: none;
+    box-shadow: none;
+}
+
+path.neg {
+    color: red !important;
+}
+
+.text-danger {
+    color: red !important;
+}
+
+path.star-fill-icon {
+    color: rgb(255, 195, 0);
+}
+
+path.pos {
+    color: green !important;
+}
+
+.card-title {
+    line-height: 20px;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.stock-img {
+    max-width: 100%;
+    height: auto;
+}
+
+.cancel-no-style {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.cancel-text {
+    color: blue !important;
+    display: block;
+    height: fit-content;
+    border-bottom: 1px solid blue !important;
+    background: transparent !important;
+    font-size: 20px;
+}
+
+.full-width-tab .mat-tab-body-content {
+    width: 100%;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.peers {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.nav-button:not(.active) {
+    color: #626365 !important;
+}
+
+.nav-button.active {
+    border-bottom: 2px solid #4051B5 !important;
+    color: #4051B5 !important;
+}
+
+.nav-button:hover {
+    background-color: #F8F8FC !important;
+}
+
+.nav-bar-button {
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 1px;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    white-space: nowrap;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  button.bg-transparent:active {
+    background-color: #F8F8FC !important;
+  }

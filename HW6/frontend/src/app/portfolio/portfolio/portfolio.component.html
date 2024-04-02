@@ -1,0 +1,168 @@
+<!-- @if (successMessage) {
+	<ngb-alert #selfClosingAlert type="success" (closed)="successMessage = ''">AAPL bought successfully</ngb-alert>
+} -->
+
+
+
+<div class="container mt-5 mb-4">
+
+    <div class="col-md-10 col-sm-12 mx-auto">
+        <ngb-alert *ngIf="showBuyAlert" (closed)="showBuyAlert = false" type="success" class="d-flex align-items-center justify-content-center mb-4">
+            {{ buyMessage }}
+        </ngb-alert>
+        <ngb-alert *ngIf="showSellAlert" (closed)="showSellAlert = false" type="danger" class="d-flex align-items-center justify-content-center mb-4">
+            {{ sellMessage }}
+        </ngb-alert>
+        <div class="fs-1 mx-2">My Portfolio</div>
+    </div>
+
+</div>
+<div class="container" *ngIf="!isLoading">
+    <div class="col-md-10 col-sm-12 mx-auto">
+        <div class="fs-4 mx-2">Money in wallet: ${{walletAmount.amount | number:'1.2-2' }}</div>
+    </div>
+</div>
+<div class="container">
+    <mat-spinner *ngIf="isLoading" class="mt-4 mx-auto mt-5" diameter="60"></mat-spinner>
+    <div class="col-md-10 col-sm-12 mx-auto">
+        <div *ngIf="stocks.length == 0 && !isLoading" class="alert alert-warning my-3 mx-2" role="alert">
+            Currently you don't have any stock.
+        </div>
+        <div *ngIf="stocks.length !== 0 && !isLoading">
+            <div *ngFor="let stock of stocks">
+            <div  *ngIf="+stock.quantity > 0" class="card my-3 mx-2">
+                <div class="card-header py-0 px-3" (click)="goToDetails(stock.stock)" style="cursor: pointer;">
+                    <div class="row p-2 d-flex align-items-end">
+                        <div class="fs-4 m-0 p-0 col-auto lh-1">{{ stock.stock }}</div>
+                        <div class="fs-6 my-0 mx-2 p-0 text-secondary col-auto">{{ stock.name }}</div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="card-text row m-0 my-2 py-2">
+                        <!-- first column -->
+                        <div class="col-sm p-0 m-0 mx-2">
+                            <div class="row m-0 p-0">
+                                <div class="fs-6 font-w col-8 m-0 p-0">Quantity:</div>
+                                <div class="fs-6 font-w col-4 m-0 p-0 text-right">
+                                    {{ stock.quantity }}
+                                </div>
+                            </div>
+                            <div class="row m-0 p-0">
+                                <div class="fs-6 font-w col-8 m-0 p-0">Avg. Cost/Share:</div>
+                                <div class="fs-6 font-w col-4 m-0 p-0 text-right">
+                                    {{ stock.price }}
+                                </div>
+                            </div>
+                            <div class="row m-0 p-0">
+                                <div class="fs-6 font-w col-8 m-0 p-0">Total Cost:</div>
+                                <div class="fs-6 font-w col-4 m-0 p-0 text-right">
+                                    {{ (+stock.quantity * +stock.price) | number:'1.2-2'}}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- second column -->
+                        <div class="col-sm p-0 m-0 mx-2">
+                            <div class="row m-0 p-0">
+                                <div class="fs-6 font-w col-8 m-0 p-0">Change:</div>
+                                <div class="fs-6 font-w col-4 m-0 p-0 text-right font-weight-bold">
+                                    <div class="m-0 d-inline-flex align-items-center" style="position: relative;top: 1px">
+                                    <svg *ngIf="getFormattedNumber(stock) > 0" width=".75em" height=".75em" viewBox="0 0 16 16"
+                                        class="bi bi-caret-up-fill" fill="green" xmlns="http://www.w3.org/2000/svg">
+                                        <path class="pos"
+                                            d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                    </svg>
+                                    <svg *ngIf="getFormattedNumber(stock) < 0" width=".75em" height=".75em" viewBox="0 0 16 16"
+                                        class="bi bi-caret-down-fill" fill="red" xmlns="http://www.w3.org/2000/svg">
+                                        <path class="neg"
+                                            d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                    </svg>
+                                </div>
+                                    <span [class.text-success]="getFormattedNumber(stock) > 0" [class.text-danger]="getFormattedNumber(stock) < 0">
+                                        {{ getFormattedNumber(stock) }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row m-0 p-0">
+                                <div class="fs-6 font-w col-8 m-0 p-0">Current Price:</div>
+                                <div class="fs-6 font-w col-4 m-0 p-0 text-right font-weight-bold" [class.text-success]="getFormattedNumber(stock) > 0" [class.text-danger]="getFormattedNumber(stock) < 0">
+                                    {{ stock.currentPrice }}
+                                </div>
+                            </div>
+                            <div class="row m-0 p-0">
+                                <div class="fs-6 font-w col-8 m-0 p-0">Market Value:</div>
+                                <div class="fs-6 font-w col-4 m-0 p-0 text-right font-weight-bold" [class.text-success]="getFormattedNumber(stock) > 0" [class.text-danger]="getFormattedNumber(stock) < 0">
+                                    {{ (+stock.currentPrice) * (+stock.quantity) | number:'1.2-2' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer px-0">
+                    <button id="buy-button" class="btn btn-primary p-1 px-3 mx-2" (click)="open1(buy)">
+                        Buy
+                    </button>
+                    <button id="sell-button" class="btn btn-danger p-1 px-3 mx-2" (click)="open2(sell)">
+                        Sell
+                    </button>
+                </div>
+                <ng-template #buy let-c="close" let-d="dismiss">
+                    <div class="modal-header">
+                        <div class="row">
+                            <div class="col-12  modal-title" id="modal-basic-title">{{ stock.stock }}</div>
+                            <div class="col-12 h6 text-black-50"></div>
+                        </div>
+                            <button type="button" class="cancel-no-style" aria-label="Close"
+                            (click)="d('Cross click')"><span class="cancel-text"
+                                aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body px-3">
+                        <div>Current Price: {{ stock.currentPrice }}</div>
+                        <div>Money in wallet: ${{ walletAmount.amount }}</div>
+                        <div class="form-group row">
+                            <label for="quantity" class="col-sm-2 col-form-label">Quantity:</label>
+                            <div class="col-sm-10 pl-0 pt-1">
+                                <input type="number" name="quantity" min="0" value="0" class="form-control full-width" [(ngModel)]="quantityBuy">
+                            </div>
+                        </div>
+                        <div *ngIf="walletAmount.amount - quantityBuy*stock.currentPrice < 0" class="text-danger pt-2">
+                            Not enough money in wallet!
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>Total: {{ (quantityBuy*stock.currentPrice) | number:'1.2-2' }}</div>
+                        <button type="button" class="btn btn-success ml-auto" [disabled]="walletAmount.amount - quantityBuy*stock.currentPrice < 0 || quantityBuy == 0" (click)="buyStock(walletAmount.amount - quantityBuy*stock.currentPrice,stock.stock, quantityBuy*stock.currentPrice, stock.name, quantityBuy, stock)">Buy</button>
+                    </div>
+                </ng-template>
+                <ng-template #sell let-c="close" let-d="dismiss">
+                    <div class="modal-header">
+                        <div class="row">
+                            <div class="col-12  modal-title" id="modal-basic-title">{{ stock.stock }}</div>
+                            <div class="col-12 h6 text-black-50"></div>
+                        </div>
+                            <button type="button" class="cancel-no-style" aria-label="Close"
+                            (click)="d('Cross click')"><span class="cancel-text"
+                                aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body px-3">
+                        <div>Current Price: {{ stock.currentPrice }}</div>
+                        <div>Money in wallet: ${{ walletAmount.amount }}</div>
+                        <div class="form-group row">
+                            <label for="quantity" class="col-sm-2 col-form-label">Quantity:</label>
+                            <div class="col-sm-10 pl-0 pt-1">
+                                <input type="number" id="quantity" name="quantity" min="0" value="0" class="form-control full-width" [(ngModel)]="quantitySell">
+                            </div>
+                        </div>
+                        <div *ngIf="quantitySell > +stock.quantity" class="text-danger pt-2">
+                            You cannot sell the stocks that you don't have!
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>Total: {{ quantitySell*stock.currentPrice | number:'1.2-2' }}</div>
+                        <button type="button" class="btn btn-success ml-auto" [disabled]="quantitySell > +stock.quantity || quantitySell == 0" (click)="sellStock(quantitySell*stock.currentPrice, stock.stock, stock.name, quantitySell, stock)">Sell</button>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>

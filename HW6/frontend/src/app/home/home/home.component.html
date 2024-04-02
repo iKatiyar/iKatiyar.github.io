@@ -1,0 +1,53 @@
+<div class="col-sm text-center" id="header-text">
+    <h1>STOCK SEARCH</h1>
+  </div>
+  <form class="mx-4 d-flex justify-content-center" (submit)="onSubmit(tickerForm); $event.preventDefault()">
+    <div class="input-group align-baseline rounded rounded-pill pl-3 align-self-center" id="group-outer">
+        <input type="text" class="form-control input-no-focus" [formControl]="tickerForm"
+        style="border: none" placeholder="Enter Stock Ticker Symbol" aria-label="Stock Ticker" [matAutocomplete]="auto"
+        aria-describedby="basic-addon2">
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onSubmit($event.option.value)">
+          <mat-option *ngIf="isLoading"><mat-spinner diameter="30"></mat-spinner></mat-option>
+          <ng-container>
+              <mat-option *ngFor="let company of filteredCompanies | async" [value]="company.displaySymbol"
+                  (onSelectionChange)="onSubmit(tickerForm)">
+                  <span>{{ company.displaySymbol }}</span>
+                  <small> | {{company.description}}</small>
+              </mat-option>
+          </ng-container>
+      </mat-autocomplete>
+      <div class="input-group-append m-1 border-0 p-0">
+        <button id="button-addon1" type="submit"
+          class="btn btn-link text-primary m-0 border-0 py-0 px-1 align-self-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+            viewBox="0 0 16 16">
+            <path
+              d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+          </svg>
+        </button>
+        <button id="button-addon1" (click)="onReset()" type="reset"
+          class="btn btn-link text-primary m-0 border-0 align-self-center py-0 px-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x"
+            viewBox="0 0 16 16">
+            <path
+              d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </form>
+  
+  <div class="container">
+    <div class="row d-flex align-items-center justify-content-center">
+      <div class="col-sm col-xl-10 col-lg-10 d-flex align-middle justify-content-center">
+          <ngb-alert *ngIf="alerts.length > 0" [dismissible]="true" [type]="alerts[0].type" (closed)="close(alerts[0])" class="d-flex align-items-center justify-content-center w-100 mt-4">
+            {{ alerts[0].message }}
+          </ngb-alert>
+      </div>
+    </div>
+  </div>
+
+<!-- <app-search *ngIf="stockService.showDeatils"></app-search> -->
+  
+  
+  

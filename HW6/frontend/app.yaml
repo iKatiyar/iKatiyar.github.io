@@ -1,0 +1,7 @@
+runtime: python311
+handlers:
+  - url: /
+    static_files: dist/frontend/browser/index.html
+    upload: dist/frontend/browser/index.html
+  - url: /
+    static_dir: dist/frontend/browser

@@ -1,0 +1,60 @@
+<div class="container mt-5 mb-4">
+    <div class="col-md-9 col-sm-12 mx-auto">
+        <div class="fs-1 mx-2">My Watchlist</div>
+    </div>
+
+</div>
+<div class="container">
+    <div class="col-md-9 col-sm-12 mx-auto pt-4">
+        <mat-spinner *ngIf="isLoading" class="mt-4 mx-auto" diameter="60"></mat-spinner>
+        <div *ngIf="watchlist.length == 0 && !isLoading" class="alert alert-warning my-3 mx-2" role="alert">
+            Currently you don't have any stock in your Watchlist.
+        </div>
+        <div>
+            <div *ngIf="!isLoading">
+                <div *ngFor="let item of watchlist" class="card m-2">
+                    <div class="card-body p-0 pb-2" (click)="goToDetails(item.ticker)" style="cursor: pointer">
+                        <div class="card-text row m-1">
+                            <div class="col-sm p-0 m-0 mx-2">
+                                <div class="row">
+                                    <div class="col-1 py-1">
+                                        <button type="button" class="cancel-no-style fs-6" aria-label="Close"><span
+                                                aria-hidden="true" (click)="delete(item.ticker);  $event.stopPropagation()">&times;</span></button>
+                                    </div>
+                                </div>
+                                <div class="row m-0 p-0">
+                                    <div class="fs-3 font-w col m-0 p-0 py-2">{{ item.ticker }}</div>
+                                    <div class="fs-3 font-w col m-0 p-0 text-right py-2"
+                                        [class.text-danger]="item.d < 0" [class.text-success]="item.d > 0">
+                                        {{ item.c }}
+                                    </div>
+                                </div>
+                                <div class="row m-0 p-0">
+                                    <div class="fs-7 font-w col m-0 p-0 py-2">{{ item.name }}</div>
+                                    <div class="fs-7 font-w col m-0 p-0 text-right py-2"
+                                        [class.text-danger]="item.d < 0" [class.text-success]="item.d > 0">
+                                        <div class="m-0 d-inline-flex align-items-center" style="position: relative;top: 2px">
+                                        <!-- green arrow up if positive change -->
+                                        <svg *ngIf="item.d > 0" width="1em" height="1em" viewBox="0 0 16 16"
+                                            class="bi bi-caret-up-fill" fill="green" xmlns="http://www.w3.org/2000/svg">
+                                            <path class="pos"
+                                                d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                        </svg>
+                                        <!-- red arrow down if negative change -->
+                                        <svg *ngIf="item.d < 0" width="1em" height="1em" viewBox="0 0 16 16"
+                                            class="bi bi-caret-down-fill" fill="red" xmlns="http://www.w3.org/2000/svg">
+                                            <path class="neg"
+                                                d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                        </svg>
+                                    </div>
+                                        {{item.d }} ({{ item.dp | number:'1.2-2'}})%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

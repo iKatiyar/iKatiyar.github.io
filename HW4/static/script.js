@@ -103,7 +103,7 @@ function getChart(endpoint, ticker) {
         if (request.readyState == 4 && request.status == 200) {
             chartData = JSON.parse(this.responseText);
             console.log("AT last result change chart-->" + JSON.stringify(chartData));
-            makechart();
+            makechart(ticker);
         }
     };
     request.send(null);
@@ -118,7 +118,7 @@ function getNews(endpoint, ticker) {
             console.log("AT last result change news-->" + JSON.stringify(newsDetails));
             var news = document.getElementsByClassName("news");
             if(news.length > 1) {
-                for(i = n; i > 0; i--) {
+                for(i = news.length-1; i > 0; i--) {
                     news[i].remove();
                 }
             }
@@ -155,12 +155,12 @@ function getDate(newsDate) {
 }
 
 
-function makechart() {
+function makechart(ticker) {
 
     const date = new Date();
 
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
+    let day = ("0" + date.getDate()).slice(-2)
+    let month = ("0" + (date.getMonth() + 1)).slice(-2);
     let year = date.getFullYear();
 
     const stockPrice = [], volume = [];
@@ -188,11 +188,11 @@ function makechart() {
         rangeSelector: {
             buttons: [{
                 type: 'day',
-                count: 1,
+                count: 7,
                 text: '7d'
             }, {
                 type: 'day',
-                count: 1,
+                count: 15,
                 text: '15d'
             }, {
                 type: 'month',
@@ -200,19 +200,25 @@ function makechart() {
                 text: '1m'
             }, {
                 type: 'month',
-                count: 1,
+                count: 3,
                 text: '3m'
             }, {
                 type: 'month',
-                count: 1,
+                count: 6,
                 text: '6m'
             }],
             inputEnabled: false, // it supports only days
-            selected: 1 // all
+            selected: 0 // all
+        },
+
+        plotOptions: {
+            series: {
+                pointPlacement: 'on'
+            }
         },
 
         title: {
-            text: 'Stock Price TSLA ${year}-${month}-${day}'
+            text: 'Stock Price ' + ticker + " " + year + "-" + month  + "-" + day
         },
 
         subtitle: {
@@ -231,7 +237,7 @@ function makechart() {
         yAxis: [{
 
             title: {
-                text: 'Stock'
+                text: 'Stock Price' 
             },
             opposite: false
 
@@ -239,13 +245,14 @@ function makechart() {
             title: {
                 text: 'Volume'
             },
+            tickInterval: 80000000,
             opposite: true
         }],
 
         series: [{
-            name: 'AAPL Stock Price',
+            name: "Stock Price",
             data: stockPrice,
-            type: 'area',
+            type: "area",
             threshold: null,
             tooltip: {
                 valueDecimals: 2
@@ -262,6 +269,14 @@ function makechart() {
                     [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
                 ]
             }
+        },
+        {
+            name: "Volume",
+            type: 'column',
+            data: volume,
+            yAxis: 1,
+            color: "#000000",
+            pointWidth: 5
         }],
 
     });

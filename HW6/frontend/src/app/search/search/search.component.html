@@ -1,0 +1,783 @@
+<div class="col-sm text-center header-text">
+    <h1>STOCK SEARCH</h1>
+</div>
+<form class="mx-4 d-flex justify-content-center" (submit)="onSubmit(tickerForm); $event.preventDefault()">
+    <div class="input-group align-baseline rounded rounded-pill pl-3 align-self-center outer">
+        <input type="text" class="form-control input-no-focus" [formControl]="tickerForm" style="border: none"
+            placeholder="Enter Stock Ticker Symbol" aria-label="Stock Ticker" aria-describedby="basic-addon2"
+            [matAutocomplete]="auto ">
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onSubmit($event.option.value)">
+            <mat-option *ngIf="isLoading"><mat-spinner diameter="30"></mat-spinner></mat-option>
+            <ng-container>
+                <mat-option *ngFor="let company of filteredCompanies | async" [value]="company.displaySymbol"
+                    (onSelectionChange)="onSubmit(tickerForm)">
+                    <span>{{ company.displaySymbol }}</span>
+                    <small> | {{company.description}}</small>
+                </mat-option>
+            </ng-container>
+        </mat-autocomplete>
+        <div class="input-group-append m-1 border-0 p-0">
+            <button id="button-addon1" type="submit"
+                class="btn btn-link text-primary m-0 border-0 py-0 px-1 align-self-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+                    viewBox="0 0 16 16">
+                    <path class="input"
+                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                </svg>
+            </button>
+            <button id="button-addon1" (click)="onReset()" type="reset"
+                class="btn btn-link text-primary m-0 border-0 align-self-center py-0 px-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x"
+                    viewBox="0 0 16 16">
+                    <path class="input"
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</form>
+
+<div class="container">
+    <div class="row d-flex align-items-center justify-content-center">
+        <div class="col-sm col-xl-10 col-lg-10 d-flex align-middle justify-content-center">
+            <ngb-alert *ngIf="alerts.length > 0" [dismissible]="true" [type]="alerts[0].type"
+                (closed)="close(alerts[0])" class="d-flex align-items-center justify-content-center w-100 mt-4">
+                {{ alerts[0].message }}
+            </ngb-alert>
+        </div>
+        <div *ngIf="noData" class="col-sm col-xl-10 col-lg-10 my-2">
+            <div class="alert alert-danger my-5 w-100 d-flex align-middle justify-content-center" role="alert">
+                No data found. Please enter a valid Ticker.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <ngb-alert *ngIf="showBuyAlert" (closed)="showBuyAlert = false" type="success"
+        class="d-flex align-items-center justify-content-center mb-4">
+        {{ buyMessage }}
+    </ngb-alert>
+    <ngb-alert *ngIf="showSellAlert" (closed)="showSellAlert = false" type="danger"
+        class="d-flex align-items-center justify-content-center mb-4">
+        {{ sellMessage }}
+    </ngb-alert>
+    <ngb-alert *ngIf="addWatchlist" (closed)="showBuyAlert = false" type="success"
+        class="d-flex align-items-center justify-content-center mb-4">
+        {{ addWatchlistMessage }}
+    </ngb-alert>
+    <ngb-alert *ngIf="removeWatchlist" (closed)="showSellAlert = false" type="danger"
+        class="d-flex align-items-center justify-content-center mb-4">
+        {{ removeWatchlistMessage }}
+    </ngb-alert>
+    <mat-spinner *ngIf="showSearchResults" class="mt-4 mx-auto mt-5" diameter="60"></mat-spinner>
+    <!-- details header area -->
+    <div class="p-0 m-0 text-center" *ngIf="!showSearchResults && peers.length > 0">
+        <div class="row d-flex align-middle justify-content-center">
+            <div class="col-4 p-0">
+                <div class="m-0 p-0 d-flex flex-row align-middle justify-content-center ticker-font d-none d-sm-block">
+                    {{ profile.ticker }}
+                    <div class="m-0 d-inline-flex" (click)="addToWatchlist(profile.ticker, profile.name)"
+                        style="position: relative;top: -7px;left: 3px;">
+                        <svg *ngIf="inWatchList" width="0.6em" height="0.6em" viewBox="0 0 16 16"
+                            class="bi bi-star-fill mx-1 my-0" fill="#FFC300" xmlns="http://www.w3.org/2000/svg">
+                            <path class="star-fill-icon"
+                                d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                        </svg>
+                        <svg *ngIf="!inWatchList" width="0.6em" height="0.6em" viewBox="0 0 16 16"
+                            class="bi bi-star mx-1 my-0" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path class="star-icon" fill-rule="evenodd"
+                                d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.523-3.356c.329-.314.158-.888-.283-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767l-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288l1.847-3.658 1.846 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.564.564 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="m-0 p-0 d-flex flex-row align-middle justify-content-center d-block d-sm-none">
+                    <span style="font-size: 32px;">{{ profile.ticker }}</span>
+                    <div class="m-0 d-inline-flex" (click)="addToWatchlist(profile.ticker, profile.name)"
+                        style="position: relative;top: -10px;left: 3px;">
+                        <svg *ngIf="inWatchList" width="2em" height="2em" viewBox="0 0 16 16"
+                            class="bi bi-star-fill mx-1 my-0" fill="#FFC300" xmlns="http://www.w3.org/2000/svg">
+                            <path class="star-fill-icon"
+                                d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                        </svg>
+                        <svg *ngIf="!inWatchList" width="2em" height="2em" viewBox="0 0 16 16"
+                            class="bi bi-star mx-1 my-0" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path class="star-icon" fill-rule="evenodd"
+                                d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.523-3.356c.329-.314.158-.888-.283-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767l-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288l1.847-3.658 1.846 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.564.564 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="m-0  pb-1 d-flex flex-row align-middle justify-content-center" style="color: #57595B;"
+                    id="meta-name">
+                    <span class="d-none d-sm-block pt-3 fs-4">{{ profile.name }}</span>
+                    <span class="d-block d-sm-none pt-1 fs-5">{{ profile.name }}</span>
+                </div>
+                <div class="m-0 p-0 py-2 font-weight-light d-flex flex-row align-middle justify-content-center"
+                    style="color: #57595B;font-size: 12px;line-height: 1.4;">
+                    {{ profile.exchange }}
+                </div>
+                <button class="btn btn-success p-1 px-3" id="buy-button" (click)="open1(buy)">Buy</button>
+                <button *ngIf="fetchedStock.quantity > 0" class="btn btn-danger p-1 px-3 ms-2" id="sell-button"
+                    (click)="open2(sell)">Sell</button>
+                <ng-template #buy let-c="close" let-d="dismiss">
+                    <div class="modal-header">
+                        <div class="row">
+                            <div class="col-12  modal-title" id="modal-basic-title">{{ profile.ticker }}</div>
+                            <div class="col-12 h6 text-black-50"></div>
+                        </div>
+                        <button type="button" class="cancel-no-style" aria-label="Close"
+                            (click)="d('Cross click')"><span class="cancel-text"
+                                aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body px-3">
+                        <div>Current Price: {{ quote.c }}</div>
+                        <div>Money in wallet: ${{ walletAmount.amount }}</div>
+                        <div class="form-group row">
+                            <label for="quantity" class="col-sm-2 col-form-label">Quantity:</label>
+                            <div class="col-sm-10 pl-0 pt-1">
+                                <input type="number" name="quantity" min="0" value="0" class="form-control full-width"
+                                    [(ngModel)]="quantityBuy">
+                            </div>
+                        </div>
+                        <div *ngIf="walletAmount.amount - quantityBuy*quote.c < 0" class="text-danger pt-2">
+                            Not enough money in wallet!
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>Total: {{ quantityBuy*quote.c | number:'1.2-2'}}</div>
+                        <button type="button" class="btn btn-success ml-auto"
+                            [disabled]="walletAmount.amount - quantityBuy*quote.c < 0 || quantityBuy == 0"
+                            (click)="buyStock(walletAmount.amount - quantityBuy*quote.c,profile.ticker, quantityBuy*quote.c, profile.name, quantityBuy)">Buy</button>
+                    </div>
+                </ng-template>
+                <ng-template #sell let-c="close" let-d="dismiss">
+                    <div class="modal-header">
+                        <div class="row">
+                            <div class="col-12  modal-title" id="modal-basic-title">{{ profile.ticker }}</div>
+                            <div class="col-12 h6 text-black-50"></div>
+                        </div>
+                        <button type="button" class="cancel-no-style" aria-label="Close"
+                            (click)="d('Cross click')"><span class="cancel-text"
+                                aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body px-3">
+                        <div>Current Price: {{ quote.c }}</div>
+                        <div>Money in wallet: ${{ walletAmount.amount }}</div>
+                        <div class="form-group row">
+                            <label for="quantity" class="col-sm-2 col-form-label">Quantity:</label>
+                            <div class="col-sm-10 pl-0 pt-1">
+                                <input type="number" id="quantity" name="quantity" min="0" value="0"
+                                    class="form-control full-width" [(ngModel)]="quantitySell">
+                            </div>
+                        </div>
+                        <div *ngIf="quantitySell > fetchedStock.quantity" class="text-danger pt-2">
+                            You cannot sell the stocks that you don't have!
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>Total: {{ quantitySell*quote.c | number:'1.2-2'}}</div>
+                        <button type="button" class="btn btn-success ml-auto"
+                            [disabled]="quantitySell > fetchedStock.quantity || quantitySell == 0"
+                            (click)="sellStock(quantitySell*quote.c, profile.ticker, profile.name, quantitySell)">Sell</button>
+                    </div>
+                </ng-template>
+            </div>
+            <div class="col-3 p-0 d-flex flex-row align-middle justify-content-center">
+                <img src="{{ profile.logo }}" width="100" height="100" class="d-none d-sm-block">
+                <img src="{{ profile.logo }}" width="50" height="50" class="d-block d-sm-none">
+
+            </div>
+            <div class="col-4 p-0" [class.text-success]="quote.d > 0" [class.text-danger]="quote.d < 0">
+                <div class="ticker-font d-none d-sm-block">
+                    {{ quote.c }}
+                </div>
+                <div class="d-block d-sm-none pb-1" style="font-size: 32px;">
+                    {{ quote.c }}
+                </div>
+                <div class="m-0 p-0 d-flex flex-row align-middle justify-content-center fs-4 d-none d-sm-block pt-3">
+                    <div class="m-0 d-inline-flex align-items-center" style="position: relative;top: 2px">
+                        <svg *ngIf="quote.d > 0" width=".75em" height=".75em" viewBox="0 0 16 16"
+                            class="bi bi-caret-up-fill" fill="green" xmlns="http://www.w3.org/2000/svg">
+                            <path class="pos"
+                                d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                        </svg>
+                        <svg *ngIf="quote.d < 0" width=".75em" height=".75em" viewBox="0 0 16 16"
+                            class="bi bi-caret-down-fill" fill="red" xmlns="http://www.w3.org/2000/svg">
+                            <path class="neg"
+                                d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                        </svg>
+                    </div>
+                    {{ quote.d }} ({{ quote.dp | number:'1.2-2' }}%)
+                </div>
+                <div class="m-0 p-0 d-flex flex-row align-middle justify-content-center fs-4 d-block d-sm-none pt-2">
+                    <div class="m-0 d-inline-flex align-items-center">
+                        <svg *ngIf="quote.d > 0" width=".75em" height=".75em" viewBox="0 0 16 16"
+                            class="bi bi-caret-up-fill" fill="green" xmlns="http://www.w3.org/2000/svg">
+                            <path class="pos"
+                                d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                        </svg>
+                        <svg *ngIf="quote.d < 0" width=".75em" height=".75em" viewBox="0 0 16 16"
+                            class="bi bi-caret-down-fill" fill="red" xmlns="http://www.w3.org/2000/svg">
+                            <path class="neg"
+                                d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                        </svg>
+                    </div>
+                    {{ quote.d }}
+                </div>
+                <div class="fs-4 d-block d-sm-none py-1">
+                    ({{ quote.dp | number:'1.2-2' }}%)
+                </div>
+                <div class="m-0 p-0 py-1 font-weight-light d-flex flex-row-reverse  align-middle justify-content-center"
+                    style="color: #57595B; font-size: 12px;">
+                    {{ timeNow | date: "yyyy-MM-dd H:mm:ss" }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div *ngIf="(timeNow) - (quote.t * 1000) <= 300000"
+                class="m-4 text-success border-0 p-0 d-inline-flex mx-auto align-middle justify-content-center">
+                Market is Open
+            </div>
+            <div *ngIf="(timeNow) - (quote.t * 1000) > 300000"
+                class="m-4 text-danger border-0 p-0 d-inline-flex mx-auto align-middle justify-content-center">
+                Market closed on &nbsp;{{ quote.t *1000 | date: "yyyy-MM-dd H:mm:ss" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- <mat-tab-group mat-stretch-tabs="true" mat-align-tabs="center" animationDuration="0ms"
+        *ngIf="!showSearchResults && peers.length > 0"> -->
+    <!-- summary tab -->
+    <!-- <mat-tab label="Summary">
+            <div class="container" id="summary-content">
+                <div class="row flex-row mt-4">
+                    <div class="col-sm">
+                        <div class="row ml-1">
+                            <div class="col p-0">
+                                <p class="m-0 d-flex align-middle justify-content-center"><b>High Price:&nbsp;</b>{{
+                                    quote.h }}</p>
+                                <p class="m-0 d-flex align-middle justify-content-center"><b>Low Price:&nbsp;</b>{{
+                                    quote.l }}</p>
+                                <p class="m-0 d-flex align-middle justify-content-center"><b>Open Price:&nbsp;</b>{{
+                                    quote.o }}</p>
+                                <p class="m-0 d-flex align-middle justify-content-center"><b>Prev. Close:&nbsp;</b>{{
+                                    quote.pc }}</p>
+                            </div>
+                            <div class="col p-0 d-none d-sm-block"></div>
+                        </div>
+
+                        <!-- company description row 
+                        <div class="row mt-4">
+                            <div class="col">
+                                <h2 class="mt-1 mx-auto d-flex align-middle justify-content-center"><u>About the
+                                        Company</u></h2>
+                                <p class="d-flex align-middle justify-content-center"><b>IPO Start Date:&nbsp;</b> {{
+                                    profile.ipo }}</p>
+                                <p class="d-flex align-middle justify-content-center"><b>Industry:&nbsp;</b> {{
+                                    profile.finnhubIndustry }}</p>
+                                <p class="d-flex align-middle justify-content-center"><b>Webpage:&nbsp;</b> <a
+                                        href="{{profile.weburl}}" target="_blank">{{ profile.weburl }}</a></p>
+                                <p class="d-flex align-middle justify-content-center"><b>Company Peers:</b></p>
+                                <!-- <p class="d-flex align-middle justify-content-center" style="word-break: keep-all;">
+                                    <span *ngFor="let peer of peers">
+                                        <a href="search/{{ peer }}">{{ peer }}</a>,&nbsp;
+                                    </span>
+                                </p> 
+                                <div class="peers mb-2">
+                                    <a *ngFor="let peer of this.peers" style="white-space: nowrap;"
+                                        href="search/{{ peer }}">{{peer}},&nbsp;</a>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- daily charts area 
+                    <div class="col-sm pb-2">
+                        <highcharts-chart [Highcharts]="Highcharts" [options]="dailyChartOptions"
+                            [(update)]="updateFlag" [oneToOne]="true"
+                            style="width: 100%; height: 400px; display: block;">
+                        </highcharts-chart>
+                    </div>
+                </div>
+            </div>
+        </mat-tab> -->
+
+    <!-- news tab -->
+    <!-- <mat-tab label="Top News">
+            <div class="container" id="news-content">
+                <div class="row p-1">
+                    <div class="card col-sm-5 m-2 bg-light mx-auto p-0 d-none d-sm-block"
+                        style="min-width: 48%; max-height: 280px" *ngFor="let news of newsData">
+                        <div class="card-body row mx-auto" (click)="open(content)" style="cursor: pointer">
+                            <div class="col-md-3 m-0 p-0 align-self-start" style="max-width: 130px;">
+                                <img class="card-img m-0 my-auto w-100" src="{{ news.image }}"
+                                    style="object-fit: cover; height:75px ;" />
+                            </div>
+                            <div class="col text-center">
+                                <h3 class="card-title text-black-50 mx-2">{{ news.headline }}</h3>
+                            </div>
+                        </div>
+                        <ng-template #content let-c="close" let-d="dismiss">
+                            <div class="modal-header">
+                                <div class="row">
+                                    <div class="col-12 h1 modal-title" id="modal-basic-title">{{ news.source }}</div>
+                                    <div class="col-12 h6 text-black-50">{{ getNewsDate(news.datetime) }}</div>
+                                </div>
+                                <button type="button" class="cancel-no-style" aria-label="Close"
+                                    (click)="d('Cross click')"><span class="cancel-text"
+                                        aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <h2 class="m-0 p-0">{{ news.headline }}</h2>
+                                <h4 class="text-muted m-0 p-0">{{ news.summary }}</h4>
+                                <h4 class="text-black-50 m-0 p-0">For more details click <a href="{{ news.url }}"
+                                        target="_blank">here</a></h4>
+                                <div class="card mt-5">
+                                    <div class="card-body">
+                                        <h4 class="text-muted">Share</h4>
+                                        <div class=" m-1 border-0 p-0">
+                                            <a class="m-0 border-0 py-0 px-1"
+                                                [href]="'https://twitter.com/intent/tweet?text=' + encodeURI(news.headline + ' ' + news.url)"
+                                                target="_blank">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                    viewBox="0 0 512 512"><!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc
+                                                    <path
+                                                        d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
+                                                </svg>
+                                            </a>
+                                            <a class="m-0 border-0 py-0 px-2"
+                                                [href]="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURI(news.url)"
+                                                target="_blank">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                    viewBox="0 0 448 512"><!!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
+                                                    <path class="facebook"
+                                                        d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64h98.2V334.2H109.4V256h52.8V222.3c0-87.1 39.4-127.5 125-127.5c16.2 0 44.2 3.2 55.7 6.4V172c-6-.6-16.5-1-29.6-1c-42 0-58.2 15.9-58.2 57.2V256h83.6l-14.4 78.2H255V480H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                    <div class="card col-sm-5 m-2 bg-light mx-auto p-0 d-block d-sm-none" style="min-width: 48%;"
+                        *ngFor="let news of newsData">
+                        <div class="card-body row mx-auto" (click)="open(content)">
+                            <div class="col-md-2 m-0 p-0 my-auto">
+                                <img class="card-img m-0 my-auto" src="{{ news.image }}" alt="News card image cap" />
+                            </div>
+                            <div class="col">
+                                <h3 class="card-title text-black-50">{{ news.headline }}</h3>
+                            </div>
+                        </div>
+                        <ng-template #content let-c="close" let-d="dismiss">
+                            <div class="modal-header">
+                                <div class="row">
+                                    <div class="col-12 h1 modal-title" id="modal-basic-title">{{ news.source }}</div>
+                                    <div class="col-12 h6 text-black-50">{{ getNewsDate(news.datetime) }}</div>
+                                </div>
+                                <button type="button" class="cancel-no-style" aria-label="Close"
+                                    (click)="d('Cross click')"><span class="cancel-text"
+                                        aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <h2 class="m-0 p-0">{{ news.headline }}</h2>
+                                <h4 class="text-muted m-0 p-0">{{ news.summary }}</h4>
+                                <h4 class="text-black-50 m-0 p-0">For more details click <a href="{{ news.url }}"
+                                        target="_blank">here</a></h4>
+                                <div class="card mt-5">
+                                    <div class="card-body">
+                                        <h4 class="text-muted">Share</h4>
+                                        <div class=" m-1 border-0 p-0">
+                                            <a class="m-0 border-0 py-0 px-1"
+                                                [href]="'https://twitter.com/intent/tweet?text=' + encodeURI(news.headline + ' ' + news.url)"
+                                                target="_blank">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                    viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
+                                                    <path
+                                                        d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
+                                                </svg>
+                                            </a>
+                                            <a class="m-0 border-0 py-0 px-2"
+                                                [href]="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURI(news.url)"
+                                                target="_blank">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                    viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
+                                                    <path class="facebook"
+                                                        d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64h98.2V334.2H109.4V256h52.8V222.3c0-87.1 39.4-127.5 125-127.5c16.2 0 44.2 3.2 55.7 6.4V172c-6-.6-16.5-1-29.6-1c-42 0-58.2 15.9-58.2 57.2V256h83.6l-14.4 78.2H255V480H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </mat-tab> -->
+
+    <!-- charts tab -->
+    <!-- <mat-tab label="Charts">
+            <div class="col-12">
+                <highcharts-chart [Highcharts]="Highcharts" [options]="chartOptions" [oneToOne]="true"
+                    [(update)]="updateFlag1" style = "width: 100%; height:800;">
+                </highcharts-chart>
+            </div>
+        </mat-tab> -->
+
+    <!-- charts tab -->
+    <!-- <mat-tab label="Insights">
+            <div class="container">
+                <div class="row d-flex align-middle justify-content-center">
+                    <div class="col-md-4 col-sm">
+                        <h2 class="d-flex align-middle justify-content-center">Insider Sentiments</h2>
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th scope="col">{{ profile.name }}</th>
+                                    <th scope="col">MSPR</th>
+                                    <th scope="col">Change</th>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Total</th>
+                                    <td>{{ sentiments.totalMspr }}</td>
+                                    <td>{{ sentiments.totalChange }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Positive</th>
+                                    <td>{{ sentiments.positiveMspr }}</td>
+                                    <td>{{ sentiments.positiveChange }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Negative</th>
+                                    <td>{{ sentiments.negativeMspr }}</td>
+                                    <td>{{ sentiments.negativeChange }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row d-flex align-middle justify-content-center">
+                    <div class="col-6 d-none d-sm-block">
+                        <highcharts-chart [Highcharts]="Highcharts" [options]="reccChartOptions"
+                            [(update)]="updateFlag2" [oneToOne]="true"
+                            style="width: 100%; height: 400px; display: block;">
+                        </highcharts-chart>
+                    </div>
+                    <div class="col-6 d-none d-sm-block">
+                        <highcharts-chart [Highcharts]="Highcharts" [options]="earningsChartOptions"
+                            [(update)]="updateFlag2" [oneToOne]="true"
+                            style="width: 100%; height: 400px; display: block;">
+                        </highcharts-chart>
+                    </div>
+                    <div class="col-sm d-block d-sm-none">
+                        <highcharts-chart [Highcharts]="Highcharts" [options]="reccChartOptions"
+                            [(update)]="updateFlag2" [oneToOne]="true"
+                            style="width: 100%; height: 400px; display: block;">
+                        </highcharts-chart>
+                    </div>
+                    <div class="col-sm d-block d-sm-none">
+                        <highcharts-chart [Highcharts]="Highcharts" [options]="earningsChartOptions"
+                            [(update)]="updateFlag2" [oneToOne]="true"
+                            style="width: 100%; height: 400px; display: block;">
+                        </highcharts-chart>
+                    </div>
+                </div>
+            </div>
+        </mat-tab> -->
+    <!-- </mat-tab-group> -->
+
+
+    <div *ngIf="!showSearchResults && peers.length > 0" class="row justify-content-center">
+        <button #scrollButtonLeft class="bg-transparent border-0 p-0 col d-block d-sm-none" (click)="scrollLeft()" style="margin-right: 4px; margin-left: 12px;" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-chevron-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" stroke-width="1" stroke="currentColor"
+                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+            </svg>
+        </button>
+        <ul #scrollableList ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs border-0 col-10 d-flex flex-row flex-nowrap hide-scrollbar" style="overflow-x: auto;">
+            <li [ngbNavItem]="1" class="col-md-3 col-5" #nav1 (click)="nav1.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); checkScroll()">
+                <button ngbNavLink class="border-0 w-100 nav-button rounded-0 nav-bar-button">Summary</button>
+                <ng-template ngbNavContent>
+                    <div class="container mb-4" id="summary-content">
+                        <div class="row flex-row mt-4">
+                            <div class="col-sm">
+                                <div class="row ml-1">
+                                    <div class="col p-0">
+                                        <p class="m-0 d-flex align-middle justify-content-center"><b>High
+                                                Price:&nbsp;</b>{{
+                                            quote.h }}</p>
+                                        <p class="m-0 d-flex align-middle justify-content-center"><b>Low
+                                                Price:&nbsp;</b>{{
+                                            quote.l }}</p>
+                                        <p class="m-0 d-flex align-middle justify-content-center"><b>Open
+                                                Price:&nbsp;</b>{{
+                                            quote.o }}</p>
+                                        <p class="m-0 d-flex align-middle justify-content-center"><b>Prev.
+                                                Close:&nbsp;</b>{{
+                                            quote.pc }}</p>
+                                    </div>
+                                    <div class="col p-0 d-none d-sm-block"></div>
+                                </div>
+
+                                <!-- company description row -->
+                                <div class="row mt-4">
+                                    <div class="col">
+                                        <h2 class="mt-1 mx-auto d-flex align-middle justify-content-center"><u>About the
+                                                Company</u></h2>
+                                        <p class="d-flex align-middle justify-content-center"><b>IPO Start
+                                                Date:&nbsp;</b> {{
+                                            profile.ipo }}</p>
+                                        <p class="d-flex align-middle justify-content-center"><b>Industry:&nbsp;</b> {{
+                                            profile.finnhubIndustry }}</p>
+                                        <p class="d-flex align-middle justify-content-center"><b>Webpage:&nbsp;</b> <a
+                                                href="{{profile.weburl}}" target="_blank">{{ profile.weburl }}</a></p>
+                                        <p class="d-flex align-middle justify-content-center"><b>Company Peers:</b></p>
+                                        <!-- <p class="d-flex align-middle justify-content-center" style="word-break: keep-all;">
+                                        <span *ngFor="let peer of peers">
+                                            <a href="search/{{ peer }}">{{ peer }}</a>,&nbsp;
+                                        </span>
+                                    </p> -->
+                                        <div class="peers mb-2">
+                                            <a *ngFor="let peer of this.peers" style="white-space: nowrap; cursor: pointer; color: #007bff;text-decoration: underline;"
+                                                 (click)="goToDetails(peer)">{{peer}},&nbsp;</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- daily charts area -->
+                            <div class="col-sm pb-2">
+                                <highcharts-chart [Highcharts]="Highcharts" [options]="dailyChartOptions"
+                                    [(update)]="updateFlag" [oneToOne]="true"
+                                    style="width: 100%; height: 400px; display: block;">
+                                </highcharts-chart>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </li>
+            <li [ngbNavItem]="2" class="col-md-3 col-5" #nav2 (click)="nav2.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); checkScroll()">
+                <button ngbNavLink class="border-0 w-100 nav-button rounded-0 nav-bar-button">Top News</button>
+                <ng-template ngbNavContent>
+                    <div class="container mb-2" id="news-content">
+                        <div class="row p-1">
+                            <div class="card col-sm-5 m-2 bg-light mx-auto p-0 d-none d-sm-block"
+                                style="min-width: 48%; max-height: 280px" *ngFor="let news of newsData">
+                                <div class="card-body row mx-auto" (click)="open(content)" style="cursor: pointer">
+                                    <div class="col-md-3 m-0 p-0 align-self-start" style="max-width: 130px;">
+                                        <img class="card-img m-0 my-auto w-100" src="{{ news.image }}"
+                                            style="object-fit: cover; height:75px ;" />
+                                    </div>
+                                    <div class="col text-center">
+                                        <h3 class="card-title text-black-50 mx-2">{{ news.headline }}</h3>
+                                    </div>
+                                </div>
+                                <ng-template #content let-c="close" let-d="dismiss">
+                                    <div class="modal-header">
+                                        <div class="row">
+                                            <div class="col-12 h1 modal-title" id="modal-basic-title">{{ news.source }}
+                                            </div>
+                                            <div class="col-12 h6 text-black-50">{{ getNewsDate(news.datetime) }}</div>
+                                        </div>
+                                        <button type="button" class="cancel-no-style" aria-label="Close"
+                                            (click)="d('Cross click')"><span class="cancel-text"
+                                                aria-hidden="true">&times;</span></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <h2 class="m-0 p-0">{{ news.headline }}</h2>
+                                        <h4 class="text-muted m-0 p-0">{{ news.summary }}</h4>
+                                        <h4 class="text-black-50 m-0 p-0">For more details click <a
+                                                href="{{ news.url }}" target="_blank">here</a></h4>
+                                        <div class="card mt-5">
+                                            <div class="card-body">
+                                                <h4 class="text-muted">Share</h4>
+                                                <div class=" m-1 border-0 p-0">
+                                                    <a class="m-0 border-0 py-0 px-1"
+                                                        [href]="'https://twitter.com/intent/tweet?text=' + encodeURI(news.headline + ' ' + news.url)"
+                                                        target="_blank">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                            viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                            <path
+                                                                d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
+                                                        </svg>
+                                                    </a>
+                                                    <a class="m-0 border-0 py-0 px-2"
+                                                        [href]="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURI(news.url)"
+                                                        target="_blank">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                            viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                            <path class="facebook"
+                                                                d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64h98.2V334.2H109.4V256h52.8V222.3c0-87.1 39.4-127.5 125-127.5c16.2 0 44.2 3.2 55.7 6.4V172c-6-.6-16.5-1-29.6-1c-42 0-58.2 15.9-58.2 57.2V256h83.6l-14.4 78.2H255V480H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z" />
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                            <div class="card col-sm-5 m-2 bg-light mx-auto p-0 d-block d-sm-none"
+                                style="min-width: 48%;" *ngFor="let news of newsData">
+                                <div class="card-body row mx-auto" (click)="open(content)">
+                                    <div class="col-md-2 m-0 p-0 my-auto">
+                                        <img class="card-img m-0 my-auto" src="{{ news.image }}"
+                                            alt="News card image cap" />
+                                    </div>
+                                    <div class="col">
+                                        <h3 class="card-title text-black-50">{{ news.headline }}</h3>
+                                    </div>
+                                </div>
+                                <ng-template #content let-c="close" let-d="dismiss">
+                                    <div class="modal-header">
+                                        <div class="row">
+                                            <div class="col-12 h1 modal-title" id="modal-basic-title">{{ news.source }}
+                                            </div>
+                                            <div class="col-12 h6 text-black-50">{{ getNewsDate(news.datetime) }}</div>
+                                        </div>
+                                        <button type="button" class="cancel-no-style" aria-label="Close"
+                                            (click)="d('Cross click')"><span class="cancel-text"
+                                                aria-hidden="true">&times;</span></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <h2 class="m-0 p-0">{{ news.headline }}</h2>
+                                        <h4 class="text-muted m-0 p-0">{{ news.summary }}</h4>
+                                        <h4 class="text-black-50 m-0 p-0">For more details click <a
+                                                href="{{ news.url }}" target="_blank">here</a></h4>
+                                        <div class="card mt-5">
+                                            <div class="card-body">
+                                                <h4 class="text-muted">Share</h4>
+                                                <div class=" m-1 border-0 p-0">
+                                                    <a class="m-0 border-0 py-0 px-1"
+                                                        [href]="'https://twitter.com/intent/tweet?text=' + encodeURI(news.headline + ' ' + news.url)"
+                                                        target="_blank">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                            viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                            <path
+                                                                d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
+                                                        </svg>
+                                                    </a>
+                                                    <a class="m-0 border-0 py-0 px-2"
+                                                        [href]="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURI(news.url)"
+                                                        target="_blank">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                                                            viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                            <path class="facebook"
+                                                                d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64h98.2V334.2H109.4V256h52.8V222.3c0-87.1 39.4-127.5 125-127.5c16.2 0 44.2 3.2 55.7 6.4V172c-6-.6-16.5-1-29.6-1c-42 0-58.2 15.9-58.2 57.2V256h83.6l-14.4 78.2H255V480H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z" />
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </li>
+            <li [ngbNavItem]="3" class="col-md-3 col-5" #nav3 (click)="nav3.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); checkScroll()">
+                <button ngbNavLink class="border-0 w-100 nav-button rounded-0 nav-bar-button">Charts</button>
+                <ng-template ngbNavContent>
+                    <div class="col-12 mb-4">
+                        <highcharts-chart [Highcharts]="Highcharts" [options]="chartOptions" [oneToOne]="true"
+                            style="width: 100%; height: 700px; display: block;">
+                        </highcharts-chart>
+                    </div>
+                </ng-template>
+            </li>
+            <li [ngbNavItem]="4" class="col-md-3 col-5" #nav4 (click)="nav4.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); checkScroll()">
+                <button ngbNavLink class="border-0 w-100 nav-button rounded-0 nav-bar-button">Insights</button>
+                <ng-template ngbNavContent>
+                    <div class="container mb-4">
+                        <div class="row d-flex align-middle justify-content-center">
+                            <div class="col-md-4 col-sm">
+                                <h2 class="d-flex align-middle justify-content-center">Insider Sentiments</h2>
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="col">{{ profile.name }}</th>
+                                            <th scope="col">MSPR</th>
+                                            <th scope="col">Change</th>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Total</th>
+                                            <td>{{ sentiments.totalMspr }}</td>
+                                            <td>{{ sentiments.totalChange }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Positive</th>
+                                            <td>{{ sentiments.positiveMspr }}</td>
+                                            <td>{{ sentiments.positiveChange }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Negative</th>
+                                            <td>{{ sentiments.negativeMspr }}</td>
+                                            <td>{{ sentiments.negativeChange }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row d-flex align-middle justify-content-center">
+                            <div class="col-6 d-none d-sm-block">
+                                <highcharts-chart [Highcharts]="Highcharts" [options]="reccChartOptions"
+                                    [(update)]="updateFlag2" [oneToOne]="true"
+                                    style="width: 100%; height: 400px; display: block;">
+                                </highcharts-chart>
+                            </div>
+                            <div class="col-6 d-none d-sm-block">
+                                <highcharts-chart [Highcharts]="Highcharts" [options]="earningsChartOptions"
+                                    [(update)]="updateFlag2" [oneToOne]="true"
+                                    style="width: 100%; height: 400px; display: block;">
+                                </highcharts-chart>
+                            </div>
+                            <div class="col-sm d-block d-sm-none">
+                                <highcharts-chart [Highcharts]="Highcharts" [options]="reccChartOptions"
+                                    [(update)]="updateFlag2" [oneToOne]="true"
+                                    style="width: 100%; height: 400px; display: block;">
+                                </highcharts-chart>
+                            </div>
+                            <div class="col-sm d-block d-sm-none">
+                                <highcharts-chart [Highcharts]="Highcharts" [options]="earningsChartOptions"
+                                    [(update)]="updateFlag2" [oneToOne]="true"
+                                    style="width: 100%; height: 400px; display: block;">
+                                </highcharts-chart>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </li>
+        </ul>
+        <button #scrollButtonRight class="bg-transparent border-0 p-0 col d-block d-sm-none" (click)="scrollRight()" style="margin-right: 12px; margin-left: 4px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-chevron-right" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" stroke-width="1" stroke="currentColor"
+                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+            </svg>
+        </button>
+        <div [ngbNavOutlet]="nav" class="mt-2 col-10"></div>
+    </div>
+    <!-- <script>
+        
+      
+        function checkScroll() {
+            const scrollableElement = document.getElementById('scrollableList');
+        const scrollButton = document.getElementById('scrollButton');
+          if (scrollableElement.scrollLeft + scrollableElement.offsetWidth >= scrollableElement.scrollWidth) {
+            console.log('disable');
+            scrollButton.disabled = true;
+          } else {
+            scrollButton.disabled = false;
+          }
+        }
+      
+        scrollableElement.addEventListener('scroll', checkScroll);
+        window.addEventListener('resize', checkScroll);
+        checkScroll();
+      </script> -->
+</div>
