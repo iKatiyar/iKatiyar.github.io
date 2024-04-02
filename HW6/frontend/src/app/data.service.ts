@@ -34,6 +34,10 @@ export class DataService {
     return this.ticker;
   }
 
+  clearTicker() {
+    this.ticker = [];
+  }
+
   setCompanyProfile(profile: CompanyProfile) {
     this.companyProfile = profile;
   }

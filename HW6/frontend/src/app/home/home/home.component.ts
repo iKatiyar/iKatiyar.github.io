@@ -5,6 +5,7 @@ import { Observable, debounceTime, finalize, map, of, switchMap, tap } from 'rxj
 import { AutoComplete } from '../../../models/auto-complete';
 import { Alert } from '../../../models/alert';
 import { HomeService } from '../home.service';
+import { DataService } from '../../data.service';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +25,7 @@ export class HomeComponent {
   constructor(
     public stockService: HomeService,
     private router: Router,
+    private dataService: DataService
   ) { }
 
   onSubmit(formEntered: any) {
@@ -70,10 +72,12 @@ export class HomeComponent {
   onReset() {
     console.log('Inside');
     this.tickerForm.reset();
+    this.dataService.clearTicker();
     this.router.navigateByUrl('/search/home');
   }
 
   ngOnInit() {
+    this.dataService.clearTicker();
     this.tickerForm.valueChanges.pipe(
       debounceTime(0),
       tap(() => {

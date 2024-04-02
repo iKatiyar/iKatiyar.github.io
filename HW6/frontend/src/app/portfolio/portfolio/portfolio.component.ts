@@ -2,7 +2,6 @@ import { Component, ViewChild } from '@angular/core';
 import { HomeService } from '../../home/home.service';
 import { PortfolioStock } from '../../../models/porfolio-stock';
 import { NgbAlert, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 @Component({

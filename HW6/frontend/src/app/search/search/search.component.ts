@@ -15,6 +15,7 @@ import HC_vbp from 'highcharts/indicators/volume-by-price';
 import { SeriesOptionsType } from 'highcharts';
 import HC_exporting from 'highcharts/modules/exporting';
 import { Earnings } from '../../../models/earnings';
+import { DataService } from '../../data.service';
 HC_exporting(Highcharts)
 
 HC_sma(Highcharts);
@@ -109,7 +110,8 @@ export class SearchComponent {
     private router: Router,
     private route: ActivatedRoute,
     private modalService: NgbModal,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private dataService: DataService
   ) { }
 
   onSubmit(formEntered: any) {
@@ -574,8 +576,9 @@ export class SearchComponent {
   }
 
   onReset() {
-    console.log('Inside');
+    console.log('reset');
     this.tickerForm.reset();
+    this.dataService.clearTicker();
     this.router.navigateByUrl('/search/home');
   }
 
