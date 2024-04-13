@@ -37,6 +37,9 @@ export class AppComponent {
     if (tickerValue !== "" && tickerValue !== undefined && tickerValue !== null) {
       this.ticker = tickerValue;
       this.isTickerPresent = true;
+    } else {
+      this.ticker = "";
+      this.isTickerPresent = false;
     }
   }
 }

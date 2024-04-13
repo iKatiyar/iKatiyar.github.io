@@ -72,7 +72,7 @@
     </ngb-alert>
     <mat-spinner *ngIf="showSearchResults" class="mt-4 mx-auto mt-5" diameter="60"></mat-spinner>
     <!-- details header area -->
-    <div class="p-0 m-0 text-center" *ngIf="!showSearchResults && peers.length > 0">
+    <div class="p-0 m-0 text-center" *ngIf="!showSearchResults && peers.length > 0 && (quote.d !== 0 && quote.d !== null)">
         <div class="row d-flex align-middle justify-content-center">
             <div class="col-4 p-0">
                 <div class="m-0 p-0 d-flex flex-row align-middle justify-content-center ticker-font d-none d-sm-block">

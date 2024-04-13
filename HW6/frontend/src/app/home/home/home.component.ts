@@ -73,24 +73,25 @@ export class HomeComponent {
     console.log('Inside');
     this.tickerForm.reset();
     this.dataService.clearTicker();
+    console.log('checking ticker RH'+JSON.stringify(this.dataService.getTicker()));
     this.router.navigateByUrl('/search/home');
   }
 
   ngOnInit() {
     this.dataService.clearTicker();
+    console.log('checking ticker NGH'+JSON.stringify(this.dataService.getTicker()));
     this.tickerForm.valueChanges.pipe(
       debounceTime(0),
       tap(() => {
         this.isLoading = true;
-        this.filteredCompanies = of([]);  // clear filteredCompanies
-      }),
-      switchMap((value) => 
-        this.stockService.getAutoComplete(value).pipe(
-          map((array) => array.filter((item) => item.type === 'Common Stock' && !item.displaySymbol.includes('.'))),
-          finalize(() => setTimeout(() => this.isLoading = false, 0))
-        )
-      )
-    ).subscribe(result => this.filteredCompanies = of(result));
+        this.filteredCompanies = of([]);
+      })
+    ).subscribe((value) => {
+      this.stockService.getAutoComplete(value).pipe(
+        map((array) => array.filter((item) => item.type === 'Common Stock' && !item.displaySymbol.includes('.'))),
+        finalize(() => setTimeout(() => this.isLoading = false, 0))
+      ).subscribe(result => this.filteredCompanies = of(result));
+    });
   }
 
 }

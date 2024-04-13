@@ -137,8 +137,9 @@ export class SearchComponent {
 
       // Data for the quote
       this.stockService.getQuoteDetails(ticker).subscribe((data) => {
+        this.timeNow = Date.now();
         this.quote = data;
-
+        this.updateFlag = true;
         // // Data for the daily charts 
         this.stockService.getDailyCharts(ticker).subscribe((data) => {
           console.log(data);
@@ -175,12 +176,22 @@ export class SearchComponent {
                 marker: {
                   enabled: false,
                 },
-                color: (this.timeNow - (this.quote.t * 1000)) > 300000 ? 'red' : 'green'
+                color: this.quote.d < 0 ? 'red' : 'green'
               },
             ],
           };
           this.updateFlag = true;
         });
+        // Data for the peers
+      this.stockService.getPeerDetails(ticker).subscribe((data) => {
+        if (data.length > 0) {
+          this.showSearchResults = false;
+        } else {
+          this.showSearchResults = false;
+          this.noData = true;
+        }
+        this.peers = data.filter((peer) => !peer.includes('.'));
+      })
       });
 
       // Data for the news
@@ -194,19 +205,9 @@ export class SearchComponent {
         this.newsData = this.newsData.slice(0, 20);
       });
 
-      // Data for the peers
-      this.stockService.getPeerDetails(ticker).subscribe((data) => {
-        if (data.length > 0) {
-          this.showSearchResults = false;
-        } else {
-          this.showSearchResults = false;
-          this.noData = true;
-        }
-        this.peers = data.filter((peer) => !peer.includes('.'));
-      })
       //Data for the charts
       this.stockService.getCharts(ticker).subscribe((data) => {
-
+        this.updateFlag1 = false;
         console.log('chart data-->' + data);
         let volume = data.map((item) => [item.t, item.v]);
         let ohlc = data.map((item) => [item.t, item.o, item.h, item.l, item.c]);
@@ -579,23 +580,28 @@ export class SearchComponent {
     console.log('reset');
     this.tickerForm.reset();
     this.dataService.clearTicker();
+    console.log('checking ticker NGS'+JSON.stringify(this.dataService.getTicker()));
     this.router.navigateByUrl('/search/home');
   }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.tickerForm.setValue(params['ticker']);
+      this.quote = {} as QuoteDetails;
+      this.timeNow = Date.now();
       this.onSubmit(params['ticker']);
       this.stop$.next();
       interval(15000)
         .pipe(
           takeUntil(this.stop$),
           startWith(0),
-          switchMap(() => this.stockService.getQuoteDetailsWP(params['ticker']))
+          switchMap(() => this.stockService.getQuoteDetailsWP(params['ticker'].toUpperCase()))
         )
-        .subscribe(response => {
-          this.quote = response;
+        .subscribe((response: QuoteDetails) => {
+          console.log('quote ticker-->' + JSON.stringify((params['ticker'])));
           this.timeNow = Date.now();
+          console.log('quote-->' + JSON.stringify(response));
+          this.quote = response; 
         });
     });
     this.tickerForm.valueChanges.pipe(
@@ -603,14 +609,13 @@ export class SearchComponent {
       tap(() => {
         this.isLoading = true;
         this.filteredCompanies = of([]);
-      }),
-      switchMap((value) =>
-        this.stockService.getAutoComplete(value).pipe(
-          map((array) => array.filter((item) => item.type === 'Common Stock' && !item.displaySymbol.includes('.'))),
-          finalize(() => setTimeout(() => this.isLoading = false, 0))
-        )
-      )
-    ).subscribe(result => this.filteredCompanies = of(result));
+      })
+    ).subscribe((value) => {
+      this.stockService.getAutoComplete(value).pipe(
+        map((array) => array.filter((item) => item.type === 'Common Stock' && !item.displaySymbol.includes('.'))),
+        finalize(() => setTimeout(() => this.isLoading = false, 0))
+      ).subscribe(result => this.filteredCompanies = of(result));
+    });
   }
 
   getNewsDate(date: number) {
